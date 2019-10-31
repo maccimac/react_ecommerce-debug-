@@ -18,7 +18,8 @@ const Checkout = ({
     clientToken: null,
     error: '',
     instance: {},
-    address: ''
+    address: '',
+    loading: false
   })
 
   const userId = isAuthenticated() && isAuthenticated().user._id;
@@ -59,6 +60,7 @@ const Checkout = ({
   )
 
   const buy = () =>{
+    setData({...data, loading: true});
     //ERROR STARTS HERE. NONCE
     let nonce;
     let getNonce = data.instance
@@ -86,12 +88,14 @@ const Checkout = ({
           //empty cart
           emptyCart(()=>{
             console.log('Payment successful. Cart empty.')
+            setData({...data, loading: true})
             // setRun(!run)
           });
           //create order
         })
         .catch(error=>{
           console.log(error)
+          setData({...data, loading: false})
         })
 
       })
@@ -110,7 +114,8 @@ const Checkout = ({
         }>
           <DropIn
             options={{
-              authorization: data.clientToken
+              authorization: data.clientToken,
+              paypal: { flow: 'vault' }
             }}
             onInstance = {instance => (data.instance = instance)}
             />
@@ -132,12 +137,15 @@ const Checkout = ({
     </div>
   )
 
-
+  const showLoading = loading => (
+    loading && <h4>Loading...</h4>
+  )
   return <div>
     {/* {JSON.stringify(products)} */}
     <h2>Total: ${getTotal()}</h2>
     {showError(data.error)}
     {showSuccess(data.success)}
+    {showLoading(data.loading)}
     {showCheckout()}
 
 
