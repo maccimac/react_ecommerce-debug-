@@ -37,9 +37,8 @@ export const getCart = () =>{
     if(localStorage.getItem('cart')){
       return JSON.parse(localStorage.getItem('cart'));
     }
-  } else {
-    return [];
   }
+    return [];
 }
 
 
@@ -76,4 +75,11 @@ export const removeItem = (productId) =>{
   localStorage.setItem('cart', JSON.stringify(cart));
   }
 return cart
+}
+
+export const emptyCart = next =>{
+  if(typeof window !== 'undefined'){
+    localStorage.removeItem('cart');
+    next();
+  }
 }

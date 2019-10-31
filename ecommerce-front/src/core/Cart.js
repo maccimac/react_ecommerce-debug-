@@ -54,7 +54,11 @@ const Cart = () => {
           </div>
           <div className="col-4">
             <h3>Your Cart Summary</h3>
-            <Checkout products={items}/>
+            <Checkout
+            products={items}
+            setRun={setRun}
+            run={run}
+            />
           </div>
 
 

@@ -3,6 +3,7 @@ import { isAuthenticated } from '../auth';
 import { Link } from 'react-router-dom';
 import { getProducts, getBraintreeClientToken, processPayment } from './apiCore';
 import DropIn from 'braintree-web-drop-in-react';
+import { emptyCart } from './cartHelpers';
 
 
 
@@ -30,7 +31,7 @@ const Checkout = ({
           setData({...data, error: data.error})
         } else {
           setData({
-            ...data,
+
             clientToken: data.clientToken
           })
         }
@@ -77,10 +78,16 @@ const Checkout = ({
         }
         processPayment(userId, token, paymentData)
         .then(response => {
-          console.log(response)
+          console.log("processPayment RESPONSE: ", response)
+          console.log("DATA: ", data)
+
           setData({...data, success: response.success});
 
           //empty cart
+          emptyCart(()=>{
+            console.log('Payment successful. Cart empty.')
+            // setRun(!run)
+          });
           //create order
         })
         .catch(error=>{
@@ -107,7 +114,7 @@ const Checkout = ({
             }}
             onInstance = {instance => (data.instance = instance)}
             />
-            <button onClick ={buy} className="btn btn-success btn-block">Pay</button>
+            <button onClick ={buy} className="btn btn-success btn-block" style={{display: data.success ? 'none' : null}}>Pay</button>
         </div>
       ) : null}
     </div>
@@ -119,12 +126,20 @@ const Checkout = ({
     </div>
   )
 
+  const showSuccess = success => (
+    <div className="alert alert-success" style={{display: success ? null : 'none'}}>
+      Your payment is successful.
+    </div>
+  )
+
 
   return <div>
     {/* {JSON.stringify(products)} */}
     <h2>Total: ${getTotal()}</h2>
     {showError(data.error)}
+    {showSuccess(data.success)}
     {showCheckout()}
+
 
 
   </div>
