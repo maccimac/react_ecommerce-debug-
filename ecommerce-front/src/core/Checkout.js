@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { isAuthenticated } from '../auth';
 import { Link } from 'react-router-dom';
-import { getProducts, getBraintreeClientToken, processPayment } from './apiCore';
+import { getProducts, getBraintreeClientToken, processPayment, createOrder } from './apiCore';
 import DropIn from 'braintree-web-drop-in-react';
 import { emptyCart } from './cartHelpers';
 
@@ -41,8 +41,12 @@ const Checkout = ({
   }
 
   useEffect(()=>{
-    getToken(userId, token)
+    getToken(userId, token);
   }, [])
+
+  const handleAddress = event => {
+    setData({...data, address: event.target.value})
+  }
 
   const getTotal = () =>{
     return products.reduce((currentValue, nextValue)=>{
@@ -83,19 +87,29 @@ const Checkout = ({
           console.log("processPayment RESPONSE: ", response)
           console.log("DATA: ", data)
 
-          setData({...data, success: response.success});
+          // setData({...data, success: response.success});
+
+          //create order
+          const createOrderData = {
+            products: products,
+            transaction_id: response.transaction.id,
+            amount: response.transaction.amount,
+            address: data.address
+          }
+          createOrder(userId, token, createOrderData);
 
           //empty cart
           emptyCart(()=>{
             console.log('Payment successful. Cart empty.')
-            setData({...data, loading: true})
+            setData({loading: false, success: true})
             // setRun(!run)
+
           });
-          //create order
+
         })
         .catch(error=>{
           console.log(error)
-          setData({...data, loading: false})
+          setData({...data, loading: false, error: error.message})
         })
 
       })
@@ -112,6 +126,17 @@ const Checkout = ({
         <div onBlur={
           () => setData({...data, error: ''})
         }>
+        <div>
+          <div className="form-group mb-3">
+            <label htmlFor="" className="text-muted">Delivery Address</label>
+            <textarea name="" id="" cols="30" rows="3"
+              onChange={handleAddress}
+              className="form-control"
+              value={data.address}
+              placeholder="Type your delivery address here..."
+            />
+          </div>
+        </div>
           <DropIn
             options={{
               authorization: data.clientToken,
